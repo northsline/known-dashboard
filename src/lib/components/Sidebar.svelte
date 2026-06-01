@@ -10,10 +10,6 @@
 	];
 
 	let alertCount = $derived(known.alerts.length);
-
-	function confirmReset() {
-		known.resetDevice();
-	}
 </script>
 
 <aside class="sidebar">
@@ -57,9 +53,6 @@
 	</nav>
 
 	<div class="sidebar-foot">
-		<button class="reset-btn" onclick={confirmReset} title={t.actions.resetDevice}>
-			{t.actions.resetDevice}
-		</button>
 		<p class="foot-note">{t.footer.tagline}</p>
 	</div>
 </aside>
@@ -185,21 +178,6 @@
 		border-top: 1px solid var(--ink-hair);
 	}
 
-	.reset-btn {
-		align-self: flex-start;
-		font-size: 11px;
-		letter-spacing: 0.02em;
-		color: var(--ink-mute);
-		padding: 4px 0;
-		border-bottom: 1px solid transparent;
-		transition:
-			color 0.18s var(--ease),
-			border-color 0.18s var(--ease);
-	}
-	.reset-btn:hover {
-		color: var(--alert);
-		border-bottom-color: oklch(0.58 0.16 25 / 0.4);
-	}
 	.foot-note {
 		font-size: 11.5px;
 		line-height: 1.4;

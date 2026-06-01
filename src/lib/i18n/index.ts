@@ -4,7 +4,7 @@
 //
 // Usage:
 //   import { t } from '$lib/i18n';
-//   <h1>{t.onboarding.welcome}</h1>
+//   <h1>{t.gate.title}</h1>
 
 import { en, type Dict } from './en';
 

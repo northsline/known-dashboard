@@ -61,19 +61,6 @@ class KnownStore {
 		return true;
 	}
 
-	resetDevice() {
-		this.stop();
-		if (typeof localStorage !== 'undefined') {
-			localStorage.removeItem(STORAGE_KEYS.sticker);
-		}
-		this.stickerCode = null;
-		this.onboarded = false;
-		this.connected = false;
-		this.events = [];
-		this.devices = [];
-		this.allowlist = [];
-	}
-
 	// An event is "suppressed" when its domain is on the allowlist.
 	isAllowed(domain: string): boolean {
 		return this.allowlist.some((a) => patternMatches(a.pattern, domain));

@@ -1,11 +1,19 @@
 # Known Dashboard
-The companion app for Known, the on-device network privacy monitor by
-Northsline. It connects to the Known device over
-your local network, pulls the weekly audit, and shows every conversation your
-devices are having, on your own machine.
+
+The local monitoring app for Known, the on-device network privacy monitor by
+Northsline. It connects to the Known device over your local network, pulls the
+weekly audit, and shows every conversation your devices are having, on your own
+machine.
 
 Known is a **passive monitor**: it logs and analyzes DNS queries and shows you
-what's happening on your network. It does **not** block, redirect, or interfere with traffic: every connection goes through normally. The dashboard shows what happened, not "what iit blocked."
+what's happening on your network. It does **not** block, redirect, or interfere
+with traffic: every connection goes through normally. The dashboard shows what
+happened, not "what it blocked."
+
+This repo is the **dashboard only**. Setting up a new device (USB provisioning,
+sticker activation, Wi-Fi) lives in its own hosted app,
+[known-onboard](https://github.com/northsline/known-onboard). The dashboard
+assumes the device is already provisioned and reachable on your network.
 
 ![Dashboard screenshot](static/dashboard_screenshot.png)
 
@@ -30,21 +38,19 @@ npm run build    # outputs to ./build
 npm run preview  # serve the production build locally
 ```
 
-## Setup flow (first run)
+## First run
 
-1. **Sticker gate.** With no stored device code, the app opens to a full-screen
-   onboarding gate. Enter the code from the sticker on the underside of your
-   Known: format `KNOWN-XXXX-XXXX` (segments are `[A-Z0-9]`).
-   - The two segment fields auto-advance, accept pastes of the whole code, and
-     validate on format. A bad code shakes and shows an inline error.
-   - "Remember this device" (on by default) persists the code to
-     `localStorage` under `known:sticker`, so the gate is skipped next time.
-2. **Searching.** Once a code is accepted, the app enters the dashboard and
-   begins discovery. Until a device answers, every surface shows its empty /
-   searching state, and the global connection banner reports that the Known is
-   not yet detected.
-3. **Reset.** "Reset device" in the sidebar footer clears the stored code and
-   returns to the gate.
+With no stored device code, the dashboard opens to a small full-screen gate that
+asks for the code on the sticker of your Known: format `KNOWN-XXXX-XXXX`
+(segments are `[A-Z0-9]`). This is **not** device setup — it just tells the
+dashboard which Known to talk to. Provision a new device at
+[known-onboard](https://github.com/northsline/known-onboard) first.
+
+The code is validated on format, persisted to `localStorage` under
+`known:sticker`, and the gate is skipped on subsequent launches. Once a code is
+accepted, the dashboard begins discovery; until a device answers, every surface
+shows its empty / searching state and the connection banner reports that the
+Known is not yet detected.
 
 ## Connection architecture
 
@@ -58,19 +64,18 @@ read derived views from it. The store talks to the device through one seam:
   HTTP + WebSocket.
 
 **This is currently a scaffold.** Every method resolves to "nothing found"
-(`connect()` returns `false`, `fetchEvents()` returns `[]`, etc.) so the app
+(`connect()` returns `false`, `fetchWeeklyAudit()` returns `[]`, etc.) so the app
 exercises its searching and empty states end to end. To make the dashboard live,
 implement the `KnownClient` method bodies; the store and components already
 consume the right shapes (see [`src/lib/types.ts`](src/lib/types.ts)).
 
 Connection lifecycle on the store:
 
-- `start()`: called on mount once onboarded; instantiates the client and runs
-  discovery.
+- `start()`: called on mount once a code is present; instantiates the client and
+  runs discovery.
 - `discover()`: retry discovery (wired to the TopBar **Connect** button).
 - `connected` / `connecting` / `paused`: drive the global connection banner and
   the disabled states of the Pause / Connect / Export controls.
-
 
 ## Local QA with simulated data
 
@@ -94,7 +99,7 @@ the bundle).
 ```
 KNOWN-XXXX-XXXX        X in [A-Z0-9]
 ^^^^^ fixed prefix
-      ^^^^ ^^^^ two editable 4-char segments
+      ^^^^ ^^^^ two 4-char segments
 ```
 
 Validation is format-only for now (`/^KNOWN-[A-Z0-9]{4}-[A-Z0-9]{4}$/`,
@@ -106,10 +111,9 @@ real `KnownClient`.
 Lightweight, dependency-free. All UI copy lives in
 [`src/lib/i18n/en.ts`](src/lib/i18n/en.ts) as a typed `Dict`; components import
 the active dictionary as `t` from [`src/lib/i18n`](src/lib/i18n/index.ts) and
-read e.g. `t.onboarding.welcome`. v1 is **English-only**. To add a locale later:
+read e.g. `t.gate.title`. v1 is **English-only**. To add a locale later:
 create `xx.ts` satisfying `Dict`, register it in `index.ts`, and point
 `activeLocale` at a stored or `navigator` preference.
-
 
 ## Project shape
 
@@ -117,7 +121,7 @@ create `xx.ts` satisfying `Dict`, register it in `index.ts`, and point
 src/
   lib/
     api/client.ts        KnownClient - device connection scaffold
-    components/          Sidebar, TopBar, StickerGate, EmptyState, cards, charts
+    components/          Sidebar, TopBar, CodeGate, EmptyState, cards, charts
     config.ts            DEV_MOCK flag, storage keys, sticker regex
     data/detections.ts   static DETECTIONS metadata (production, not mock)
     data/{generate,static}.ts   DEV-only mock generator + seed data
@@ -127,7 +131,7 @@ src/
     types.ts             domain model (NetEvent, Device, AllowEntry...)
     utils.ts             formatting helpers
   routes/
-    +layout.svelte       gates the app behind onboarding; mounts shell + banner
+    +layout.svelte       code gate on first run; mounts shell + banner
     +page.svelte         Monitor: stats, traffic chart (1h/6h/24h), live feed, alerts
     manage/+page.svelte  Manage: device grid + allowlist rules
 ```
@@ -135,12 +139,14 @@ src/
 The app is two surfaces, kept deliberately small so it maps cleanly onto the
 device and is easy to keep in sync:
 
-- **Monitor** (`/`)  at-a-glance stats, the traffic chart with a 1h/6h/24h
+- **Monitor** (`/`) — at-a-glance stats, the traffic chart with a 1h/6h/24h
   range toggle, the searchable/filterable live event feed, the detections
   breakdown, and the top alert.
-- **Manage** (`/manage`)  the device grid (All / Flagged / Watched / Trusted)
+- **Manage** (`/manage`) — the device grid (All / Flagged / Watched / Trusted)
   and the allowlist (add rules + active rules).
 
 ## Out of scope (tracked elsewhere)
 
-Real Pico API implementation, device-side sticker validation, desktop packaging and actual mDNS network discovery.
+Real Pico API implementation, device-side sticker validation, desktop packaging,
+and actual mDNS network discovery. Device provisioning lives in
+[known-onboard](https://github.com/northsline/known-onboard).

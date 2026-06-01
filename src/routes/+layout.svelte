@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '$lib/styles/app.css';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import StickerGate from '$lib/components/StickerGate.svelte';
+	import CodeGate from '$lib/components/CodeGate.svelte';
 	import ConnectionBanner from '$lib/components/ConnectionBanner.svelte';
 	import { known } from '$lib/stores/known.svelte';
 	import { onMount } from 'svelte';
@@ -16,7 +16,7 @@
 </script>
 
 {#if !known.onboarded}
-	<StickerGate />
+	<CodeGate />
 {:else}
 	<div class="shell">
 		<Sidebar />

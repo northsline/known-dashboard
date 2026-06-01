@@ -11,38 +11,13 @@ export const en = {
 		brandBy: 'by Northsline'
 	},
 
-	onboarding: {
-		welcome: 'Set up your Known.',
-		subhead: 'Plug your Known into this computer with the USB cable to begin.',
+	gate: {
+		title: 'Connect to your Known.',
+		body: 'Enter the code from the sticker on your device to open its dashboard.',
 		codeLabel: 'Device code',
-		remember: 'Remember this device',
+		confirmBtn: 'Open dashboard',
 		invalid: 'Code not recognized. Check the sticker on your Known.',
-		hint: 'Setup uses your USB port. Chrome or Edge required.',
-
-		// USB WebSerial provisioning flow
-		unsupported:
-			'This browser can’t set up Known. Open this page in Chrome or Edge, which support WebSerial.',
-		stepConnectTitle: 'Connect your Known',
-		stepConnectBody: 'Plug Known into this computer with the USB cable, then connect.',
-		connectBtn: 'Connect device',
-		connecting: 'Connecting…',
-		stepConfirmTitle: 'Confirm your device',
-		stepConfirmBody: 'We read this code from your Known. Check it matches the sticker.',
-		confirmBtn: 'This is my code',
-		stepWifiTitle: 'Add your Wi-Fi',
-		stepWifiBody: 'Known joins this network once it’s unplugged from your PC.',
-		wifiSsid: 'Network name (SSID)',
-		wifiPass: 'Wi-Fi password',
-		activateBtn: 'Activate & save',
-		activating: 'Activating…',
-		provisioning: 'Saving to device…',
-		stepDoneTitle: 'You’re ready.',
-		stepDoneBody:
-			'Unplug Known from your PC and plug it into the wall adapter. It will connect on its own.',
-		doneBtn: 'Open dashboard',
-		errActivate: 'We couldn’t activate this code. It may already be claimed.',
-		errProvision: 'We couldn’t save the settings to your device. Reconnect and try again.',
-		errNoCode: 'Your Known didn’t report a code. Reconnect and try again.'
+		hint: 'Set up a new device first at known-onboard, then enter its code here.'
 	},
 
 	connection: {
@@ -61,7 +36,6 @@ export const en = {
 		connect: 'Connect',
 		disconnect: 'Disconnect',
 		exportJson: 'Export JSON',
-		resetDevice: 'Reset device',
 		investigate: 'Investigate',
 		openFeed: 'Open weekly audit',
 		addToAllowlist: 'Add to allowlist',
