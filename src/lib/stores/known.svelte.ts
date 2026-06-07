@@ -1,6 +1,6 @@
 import type { NetEvent, AllowEntry, Device, DetectionKind } from '$lib/types';
 import { KnownClient } from '$lib/api/client';
-import { DEV_MOCK, STORAGE_KEYS, STICKER_RE } from '$lib/config';
+import { shouldUseMock, STORAGE_KEYS, STICKER_RE } from '$lib/config';
 
 const MAX_EVENTS = 1200;
 
@@ -25,6 +25,7 @@ class KnownStore {
 	paused = $state(false);
 	events = $state<NetEvent[]>([]);
 	devices = $state<Device[]>([]);
+	deviceUrl = $state<string | null>(null);
 	allowlist = $state<AllowEntry[]>([]);
 	selectedDeviceId = $state<string | null>(null);
 	deviceOverrides = $state<Record<string, boolean>>({}); // id -> trusted
@@ -116,7 +117,7 @@ class KnownStore {
 	async start() {
 		if (!this.onboarded || !this.stickerCode) return;
 
-		if (DEV_MOCK) {
+		if (shouldUseMock(this.connected)) {
 			this.#startMock();
 			return;
 		}
@@ -131,13 +132,14 @@ class KnownStore {
 	}
 
 	async discover(): Promise<boolean> {
-		if (DEV_MOCK || !this.#client) return this.connected;
+		if (shouldUseMock(this.connected) || !this.#client) return this.connected;
 		this.connecting = true;
 		try {
 			const ok = await this.#client.connect();
 			this.connected = ok;
 			if (ok) {
-					this.events = await this.#client.fetchWeeklyAudit();
+				this.deviceUrl = this.#client.baseUrl ?? null;
+				this.events = await this.#client.fetchWeeklyAudit();
 				this.devices = await this.#client.fetchDevices();
 				this.allowlist = await this.#client.fetchAllowlist();
 			}
@@ -153,6 +155,22 @@ class KnownStore {
 			this.#timer = null;
 		}
 		this.#client?.disconnect();
+		this.deviceUrl = null;
+		this.connected = false;
+		try {
+			localStorage.removeItem(STORAGE_KEYS.LAST_KNOWN_IP as any);
+		} catch {}
+	}
+
+	async connect(): Promise<boolean> {
+		if (!this.onboarded || !this.stickerCode) return false;
+		if (!this.#client) {
+			this.#client = new KnownClient(this.stickerCode, {
+				onConnectionChange: (c) => (this.connected = c),
+				onEvent: (e) => this.push(e)
+			});
+		}
+		return await this.discover();
 	}
 
 	push(e: NetEvent) {
@@ -181,7 +199,13 @@ class KnownStore {
 			addedTs: Date.now()
 		};
 		this.allowlist = [entry, ...this.allowlist];
-		if (this.connected) this.#client?.putAllow(entry);
+		if (this.connected) {
+			this.#client?.putAllow(entry).then((serverId) => {
+				if (serverId) {
+					this.allowlist = this.allowlist.map((a) => (a === entry ? { ...a, id: serverId } : a));
+				}
+			});
+		}
 	}
 
 	removeAllow(id: string) {

@@ -56,6 +56,13 @@ export interface AllowEntry {
 	addedTs: number;
 }
 
+export interface Stats {
+	totalEvents: number;
+	trafficBytes: number;
+	devices: number;
+	alerts: number;
+}
+
 export interface DetectionMeta {
 	kind: DetectionKind;
 	num: string; // "01".."05"
