@@ -141,7 +141,7 @@ export class KnownClient {
 	 */
 	async putAllow(entry: AllowEntry): Promise<string | null> {
 		const u = this.url('/allowlist');
-		if (!u) return;
+		if (!u) return null;
 		try {
 			const res = await fetch(u, {
 				method: 'PUT',
