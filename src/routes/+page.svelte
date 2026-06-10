@@ -179,7 +179,7 @@
 				<p class="alert-domain">{topAlert.domain}</p>
 				<p class="alert-note">{topAlert.note}</p>
 			{:else}
-				<p class="alert-note">{t.overview.allClear}</p>
+				<p class="alert-note">{known.connected ? t.overview.waitingForTraffic : t.overview.allClear}</p>
 			{/if}
 		</section>
 	</aside>
