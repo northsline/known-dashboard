@@ -11,23 +11,19 @@ export const en = {
 		brandBy: 'by Northsline'
 	},
 
-	gate: {
-		title: 'Connect to your Known.',
-		body: 'Enter the code from the sticker on your device to open its dashboard.',
-		codeLabel: 'Device code',
-		confirmBtn: 'Open dashboard',
-		invalid: 'Code not recognized. Check the sticker on your Known.',
-		hint: 'Set up a new device first at known-onboard, then enter its code here.'
-	},
-
 	connection: {
 		searching: 'Searching for Known…',
-		connected: 'Connected',
+		connected: 'Connected to your Known',
 		offline: 'Not detected',
 		paused: 'Paused',
 		linkedTo: 'known.local',
 		bannerOffline:
-			'Known is not detected. Check that your device is powered on and on the same Wi-Fi network.'
+			"Can't find your Known. Check that it's powered on and on the same Wi-Fi network.",
+		manualLabel: 'Enter its IP address manually',
+		manualPlaceholder: '192.168.1.42 or known.local',
+		manualConnect: 'Connect',
+		manualConnecting: 'Connecting…',
+		manualInvalid: "Couldn't reach a Known device at that address."
 	},
 
 	actions: {
@@ -64,6 +60,7 @@ export const en = {
 		detections: 'Detections',
 		topAlert: 'Top alert',
 		allClear: 'All clear. Waiting for your device.',
+		waitingForTraffic: 'Looking for DNS traffic…',
 		emptyTrafficTitle: 'No traffic yet.',
 		emptyTrafficBody: "Connect your Known device to see what's on your network.",
 		emptyEvents: 'No events captured.'
