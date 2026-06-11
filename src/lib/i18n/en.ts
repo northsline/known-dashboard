@@ -23,7 +23,9 @@ export const en = {
 		manualPlaceholder: '192.168.1.42 or known.local',
 		manualConnect: 'Connect',
 		manualConnecting: 'Connecting…',
-		manualInvalid: "Couldn't reach a Known device at that address."
+		manualInvalid: "Couldn't reach a Known device at that address.",
+		manualInvalidFormat: 'Please enter a valid IP address or hostname.',
+		forgetIp: 'Forget saved IP'
 	},
 
 	actions: {
@@ -74,8 +76,8 @@ export const en = {
 		filterFlagged: 'Flagged',
 		filterWatched: 'Watched',
 		filterTrusted: 'Trusted',
-		emptyTitle: 'No devices yet.',
-		emptyBody: 'Make sure your Known device is on and connected to your network.'
+		emptyTitle: 'No devices detected yet',
+		emptyBody: "Make sure your router points to Known's IP for DNS, then refresh."
 	},
 
 	feed: {
