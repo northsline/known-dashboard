@@ -20,6 +20,17 @@
 	function closeExplainer() {
 		showExplainer = false;
 	}
+
+	function onBackdropKey(e: KeyboardEvent) {
+		if (e.key === 'Escape') closeExplainer();
+	}
+
+	function trapModalKey(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			e.stopPropagation();
+			closeExplainer();
+		}
+	}
 </script>
 
 <header class="topbar">
@@ -68,8 +79,13 @@
 </header>
 
 {#if showExplainer}
-	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={closeExplainer}>
+	<div
+		class="modal-backdrop"
+		role="presentation"
+		onclick={closeExplainer}
+		onkeydown={onBackdropKey}
+		tabindex="-1"
+	>
 		<div
 			id="explainer-modal"
 			class="modal"
@@ -77,6 +93,7 @@
 			aria-modal="true"
 			aria-labelledby="explainer-title"
 			onclick={(e) => e.stopPropagation()}
+			onkeydown={trapModalKey}
 		>
 			<div class="modal-head">
 				<span id="explainer-title" class="eyebrow">{t.explainer.eyebrow}</span>
@@ -92,7 +109,7 @@
 					</svg>
 				</button>
 			</div>
-			<p class="modal-body">{t.explainer.body}</p>
+			<p class="modal-body">{@html t.explainer.body}</p>
 		</div>
 	</div>
 {/if}
@@ -151,6 +168,11 @@
 		align-items: center;
 		flex-wrap: wrap;
 	}
+	.topbar-actions > :global(button:focus-visible) {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+		border-radius: var(--r-sm);
+	}
 
 	.modal-backdrop {
 		position: fixed;
@@ -163,6 +185,9 @@
 		padding: 24px;
 		animation: fadeIn 0.18s var(--ease);
 	}
+	.modal-backdrop:focus-visible {
+		outline: none;
+	}
 	.modal {
 		background: var(--bg-card);
 		border: 1px solid var(--ink-hair);
@@ -172,6 +197,19 @@
 		width: 100%;
 		padding: 22px 24px 24px;
 		animation: rise 0.2s var(--ease-out);
+	}
+	.modal:focus-visible {
+		outline: none;
+	}
+	.modal-close:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+		border-radius: var(--r-sm);
+	}
+	.what-link:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+		border-radius: 2px;
 	}
 	.modal-head {
 		display: flex;

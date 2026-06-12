@@ -118,6 +118,12 @@
 						onmouseleave={() => (showTooltip = false)}
 						onfocus={() => (showTooltip = true)}
 						onblur={() => (showTooltip = false)}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								showTooltip = !showTooltip;
+							}
+						}}
 						tabindex="0"
 						role="button"
 						aria-label={deviceName}

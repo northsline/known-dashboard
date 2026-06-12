@@ -15,7 +15,7 @@
 <aside class="sidebar">
 	<div class="brand">
 		<span class="brand-mark">
-			<img src="/favicon.png" alt="Known" class="brand-logo" />
+			<img src="/favicon.png" alt="" class="brand-logo" />
 		</span>
 		<div class="brand-text">
 			<span class="brand-name">Known</span>
@@ -131,6 +131,12 @@
 	.nav-link:hover {
 		border-color: var(--charcoal);
 		color: var(--ink);
+	}
+	.nav-link:focus-visible {
+		border-color: var(--charcoal);
+		color: var(--ink);
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
 	}
 	.nav-link.active {
 		border-color: var(--charcoal);

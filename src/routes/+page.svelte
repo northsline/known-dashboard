@@ -93,13 +93,15 @@
 <section class="panel">
 	<div class="panel-head">
 		<span class="eyebrow">{t.overview.trafficVolume}</span>
-		<div class="seg" class:disabled={!hasData}>
+		<div class="seg" class:disabled={!hasData} role="group" aria-label={t.overview.trafficVolume}>
 			{#each ranges as r}
 				<button
 					class="chip"
 					class:on={rangeId === r.id}
 					disabled={!hasData}
 					onclick={() => (rangeId = r.id)}
+					aria-pressed={rangeId === r.id}
+					aria-label={r.label}
 				>
 					{r.label}
 				</button>
@@ -123,7 +125,9 @@
 			<span class="eyebrow">{t.overview.latestExchanges}</span>
 			<div class="feed-controls">
 				<div class="search" class:disabled={!hasData}>
+					<label class="visually-hidden" for="feed-search">{t.feed.search}</label>
 					<input
+						id="feed-search"
 						class="search-input"
 						type="text"
 						placeholder={t.feed.search}
@@ -131,13 +135,14 @@
 						bind:value={query}
 					/>
 				</div>
-				<div class="chips" class:disabled={!hasData}>
+				<div class="chips" class:disabled={!hasData} role="group" aria-label={t.overview.detections}>
 					{#each sevs as s}
 						<button
 							class="chip"
 							class:on={sevFilter === s.id}
 							disabled={!hasData}
 							onclick={() => (sevFilter = s.id)}
+							aria-pressed={sevFilter === s.id}
 						>
 							{s.label}
 						</button>
@@ -150,15 +155,14 @@
 				<EventRow {event} fresh={event.id === firstId} />
 			{:else}
 				<EmptyState
-					title={hasData ? 'Nothing matches these filters.' : t.feed.emptyTitle}
-					body={hasData ? undefined : t.feed.emptyBody}
+					title={hasData ? t.overview.emptyFilterTitle : t.feed.emptyTitle}
+					body={hasData ? t.overview.emptyFilterBody : t.feed.emptyBody}
 					searching={!hasData}
 					compact
 				/>
 			{/each}
 		</div>
 	</section>
-
 	<aside class="side-col">
 		<section class="panel detect-panel">
 			<div class="panel-head">

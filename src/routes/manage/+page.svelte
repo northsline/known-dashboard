@@ -58,13 +58,14 @@
 <section class="block">
 	<div class="block-head">
 		<span class="eyebrow">{t.devices.eyebrow}</span>
-		<div class="seg" class:disabled={!hasDevices}>
+		<div class="seg" class:disabled={!hasDevices} role="group" aria-label={t.devices.eyebrow}>
 			{#each filters as f}
 				<button
 					class="chip"
 					class:on={filter === f.id}
 					disabled={!hasDevices}
 					onclick={() => (filter = f.id)}
+					aria-pressed={filter === f.id}
 				>
 					{f.label}
 				</button>

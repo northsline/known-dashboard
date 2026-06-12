@@ -12,7 +12,7 @@ export const en = {
 	},
 
 	connection: {
-		searching: 'Searching for Known…',
+		searching: 'Looking for your Known…',
 		connected: 'Connected to your Known',
 		offline: 'Not detected',
 		paused: 'Paused',
@@ -26,9 +26,10 @@ export const en = {
 		manualInvalid: "Couldn't reach a Known device at that address.",
 		manualInvalidFormat: 'Please enter a valid IP address or hostname.',
 		forgetIp: 'Forget saved IP',
-		bannerOfflineNever: "We can't find your Known yet. Make sure it's plugged in and on the same Wi-Fi as this device. Set it up first at",
+		bannerOfflineNever:
+			"We can't find your Known yet. Make sure it's plugged in and on the same Wi-Fi as this device. If you haven't set it up, go to known.setup first.",
 		setupLink: 'known.setup',
-		urlTooltip: 'this is your device, not a website'
+		urlTooltip: "this is your Known's address, not a website"
 	},
 
 	actions: {
@@ -42,7 +43,7 @@ export const en = {
 		addToAllowlist: 'Add to allowlist',
 		remove: 'Remove',
 		needHelp: 'Need help connecting?',
-		openSetup: 'Open',
+		openSetup: 'Set up at',
 		whatIsThis: "What's this?"
 	},
 
@@ -70,8 +71,9 @@ export const en = {
 		allClear: 'All clear. Waiting for your device.',
 		waitingForTraffic: 'Looking for DNS traffic…',
 		emptyTrafficTitle: 'No traffic yet.',
-		emptyTrafficBody: "Connect your Known device to see what's on your network.",
-		emptyEvents: 'No events captured.'
+		emptyTrafficBody: "Once your Known is connected, you'll see what's talking on your network.",
+		emptyFilterTitle: 'Nothing matches these filters.',
+		emptyFilterBody: 'Try clearing the search or filters.'
 	},
 
 	devices: {
@@ -83,13 +85,14 @@ export const en = {
 		filterWatched: 'Watched',
 		filterTrusted: 'Trusted',
 		emptyTitle: 'No devices detected yet',
-		emptyBody: "Make sure your router points to Known's IP for DNS, then refresh."
+		emptyBody:
+			"Make sure Known is plugged in and your router is using it for DNS. Then come back here and refresh."
 	},
 
 	feed: {
 		eyebrow: 'Weekly audit',
 		title: 'Network conversations, <em>over the past week.</em>',
-		search: 'filter by domain, ip, device…',
+		search: 'Filter by domain, IP, device…',
 		filterAll: 'All',
 		filterAlerts: 'Alerts',
 		filterWatch: 'Watch',
@@ -119,8 +122,9 @@ export const en = {
 
 	allowlist: {
 		eyebrow: 'Allowlist',
-		title: "Hide <em>what you've approved.</em>",
-		lead: 'Rules stay on your device. Anything on this list is hidden from your feed, but still recorded, so you can review it anytime. Build it as you go.',
+		title: "Things you've <em>approved.</em>",
+		lead:
+			"Rules stay on your device. Anything here is hidden from your feed, but still recorded, so you can review it later. Add them as you go.",
 		addRule: 'Add rule',
 		fieldPattern: 'Domain or glob',
 		fieldLabel: 'Label',
@@ -150,7 +154,7 @@ export const en = {
 
 	explainer: {
 		eyebrow: 'About Known',
-		body: "Known watches your network's DNS traffic. It never blocks anything. It never sends your data anywhere."
+		body: "Known keeps an eye on the DNS traffic on your network. It never blocks anything. It never sends your data anywhere."
 	}
 } as const;
 
