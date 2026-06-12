@@ -58,7 +58,17 @@
 			/>
 		</div>
 		<button class="btn-primary" type="submit">{t.actions.addToAllowlist}</button>
-		<p class="add-hint mono">{@html t.allowlist.hint}</p>
+		<p class="add-hint mono">
+			Use
+			<button
+				type="button"
+				class="hint-chip"
+				onclick={() => (pattern = t.allowlist.hintChip)}
+			>
+				{t.allowlist.hintChip}
+			</button>
+			for subdomains, or type an exact host.
+		</p>
 	</form>
 
 	<div class="rules">
@@ -161,6 +171,25 @@
 		padding: 1px 5px;
 		border-radius: 4px;
 		color: var(--ink-soft);
+	}
+	.hint-chip {
+		font-family: 'Space Mono', monospace;
+		font-size: inherit;
+		padding: 1px 6px;
+		border-radius: 4px;
+		background: var(--bg-sunken);
+		color: var(--ink-soft);
+		border: 1px solid var(--ink-hair);
+		cursor: pointer;
+		transition:
+			background 0.15s var(--ease),
+			color 0.15s var(--ease),
+			border-color 0.15s var(--ease);
+	}
+	.hint-chip:hover {
+		background: var(--ink-hair-2);
+		color: var(--ink);
+		border-color: var(--ink-faint);
 	}
 
 	.rules {

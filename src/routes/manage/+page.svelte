@@ -78,6 +78,17 @@
 	{#if !hasDevices}
 		<div class="surface empty-wrap">
 			<EmptyState title={t.devices.emptyTitle} body={t.devices.emptyBody} searching />
+			<p class="empty-help">
+				{t.actions.needHelp}
+				<a
+					class="setup-link"
+					href="https://known.setup"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					{t.actions.openSetup} {t.connection.setupLink}
+				</a>
+			</p>
 		</div>
 	{:else}
 		<div class="grid">
@@ -118,7 +129,17 @@
 				/>
 			</div>
 			<button class="btn-primary" type="submit">{t.actions.addToAllowlist}</button>
-			<p class="add-hint">{@html t.allowlist.hint}</p>
+			<p class="add-hint">
+				Use
+				<button
+					type="button"
+					class="hint-chip"
+					onclick={() => (pattern = t.allowlist.hintChip)}
+				>
+					{t.allowlist.hintChip}
+				</button>
+				for subdomains, or type an exact host.
+			</p>
 		</form>
 
 		<div class="rules">
@@ -201,6 +222,21 @@
 
 	.empty-wrap {
 		padding: 20px;
+	}
+	.empty-help {
+		text-align: center;
+		font-size: 13px;
+		color: var(--ink-mute);
+		margin-top: 10px;
+	}
+	.setup-link {
+		color: var(--accent);
+		font-weight: 500;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.setup-link:hover {
+		color: oklch(0.48 0.1 248);
 	}
 	.grid {
 		display: grid;

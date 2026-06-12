@@ -1,61 +1,66 @@
 import { STORAGE_KEYS } from '../config';
 
-function storageKey(): string {
-	// If `LAST_KNOWN_IP` isn't added to STORAGE_KEYS yet, fall back to a reasonable default.
- 	// This keeps discovery working before config.ts is updated in a subsequent step.
- 	return (STORAGE_KEYS as any).LAST_KNOWN_IP ?? 'known_last_ip';
+export function normalizeToBase(originOrIp: string): string | null {
+	let base = originOrIp.trim();
+	if (!base) return null;
+	if (!/^https?:\/\//i.test(base)) base = `http://${base}`;
+	try {
+		const url = new URL(base);
+		if (!url.port) {
+			return `${url.protocol}//${url.hostname}:8080`;
+		}
+		return `${url.protocol}//${url.hostname}:${url.port}`;
+	} catch {
+		return null;
+	}
 }
 
-function normalizeToBase(originOrIp: string): string | null {
- 	let base = originOrIp.trim();
- 	if (!/^https?:\/\//i.test(base)) base = `http://${base}`;
- 	try {
- 		const url = new URL(base);
- 		if (!url.port) {
- 			return `${url.protocol}//${url.hostname}:8080`;
- 		}
- 		return `${url.protocol}//${url.hostname}:${url.port}`;
- 	} catch (e) {
- 		console.error('discoverPico: invalid URL', originOrIp, e);
- 		return null;
- 	}
+async function checkHealth(base: string, timeoutMs = 2000): Promise<boolean> {
+	try {
+		const res = await fetch(`${base}/health`, { signal: AbortSignal.timeout(timeoutMs) });
+		return res.ok;
+	} catch {
+		return false;
+	}
 }
 
+function rememberBase(base: string): void {
+	try {
+		localStorage.setItem(STORAGE_KEYS.LAST_KNOWN_IP, base);
+	} catch {
+		// ignore storage errors
+	}
+}
+
+/** Try known.local, then the last saved IP. Returns a working base URL or null. */
 export async function discoverPico(): Promise<string | null> {
- 	const mdnsBase = 'http://known.local:8080';
+	const mdnsBase = 'http://known.local:8080';
 
- 	// Try mDNS-known hostname first with a short timeout.
- 	try {
- 		const res = await fetch(`${mdnsBase}/health`, { signal: AbortSignal.timeout(2000) });
- 		if (res.ok) {
- 			try {
- 				localStorage.setItem(storageKey(), mdnsBase);
- 			} catch {}
- 			return mdnsBase;
- 		}
- 	} catch (err) {
- 		console.error('discoverPico: known.local check failed', err);
- 	}
+	if (await checkHealth(mdnsBase)) {
+		rememberBase(mdnsBase);
+		return mdnsBase;
+	}
 
- 	// Fallback: check last-known IP in localStorage.
- 	try {
- 		const key = storageKey();
- 		const saved = localStorage.getItem(key);
- 		if (!saved) return null;
+	try {
+		const saved = localStorage.getItem(STORAGE_KEYS.LAST_KNOWN_IP);
+		if (!saved) return null;
 
- 		const base = normalizeToBase(saved);
- 		if (!base) return null;
+		const base = normalizeToBase(saved);
+		if (!base) return null;
 
- 		try {
- 			const res2 = await fetch(`${base}/health`, { signal: AbortSignal.timeout(2000) });
- 			if (res2.ok) return base;
- 		} catch (err) {
- 			console.error('discoverPico: saved IP check failed', err);
- 		}
- 	} catch (err) {
- 		console.error('discoverPico: localStorage fallback failed', err);
- 	}
+		if (await checkHealth(base)) return base;
+	} catch {
+		// ignore storage errors
+	}
 
- 	return null;
+	return null;
 }
 
+/** Probe a user-supplied host/IP and persist it when healthy. */
+export async function connectToManualIp(originOrIp: string): Promise<string | null> {
+	const base = normalizeToBase(originOrIp);
+	if (!base) return null;
+	if (!(await checkHealth(base))) return null;
+	rememberBase(base);
+	return base;
+}

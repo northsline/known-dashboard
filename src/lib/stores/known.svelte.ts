@@ -1,10 +1,10 @@
 import type { NetEvent, AllowEntry, Device, DetectionKind } from '$lib/types';
 import { KnownClient } from '$lib/api/client';
-import { shouldUseMock, STORAGE_KEYS, STICKER_RE } from '$lib/config';
+import { connectToManualIp } from '$lib/api/discovery';
+import { shouldUseMock } from '$lib/config';
 
 const MAX_EVENTS = 1200;
 
-// Glob match for allowlist patterns like "*.apple.com" or "github.com".
 function patternMatches(pattern: string, domain: string): boolean {
 	if (pattern === domain) return true;
 	if (pattern.startsWith('*.')) {
@@ -15,54 +15,20 @@ function patternMatches(pattern: string, domain: string): boolean {
 }
 
 class KnownStore {
-	stickerCode = $state<string | null>(null);
-	onboarded = $state(false);
-
-	// Production defaults: no device, no data. The app stays in searching state
-	// until the real client connects.
 	connected = $state(false);
 	connecting = $state(false);
+	discoveryAttempted = $state(false);
 	paused = $state(false);
 	events = $state<NetEvent[]>([]);
 	devices = $state<Device[]>([]);
 	deviceUrl = $state<string | null>(null);
 	allowlist = $state<AllowEntry[]>([]);
 	selectedDeviceId = $state<string | null>(null);
-	deviceOverrides = $state<Record<string, boolean>>({}); // id -> trusted
+	deviceOverrides = $state<Record<string, boolean>>({});
 
 	#client: KnownClient | null = null;
 	#timer: ReturnType<typeof setTimeout> | null = null;
 
-	constructor() {
-		this.#restoreSticker();
-	}
-
-	#restoreSticker() {
-		if (typeof localStorage === 'undefined') return;
-		const stored = localStorage.getItem(STORAGE_KEYS.sticker);
-		if (stored && STICKER_RE.test(stored)) {
-			this.stickerCode = stored;
-			this.onboarded = true;
-		}
-	}
-
-	isValidCode(code: string): boolean {
-		return STICKER_RE.test(code.trim().toUpperCase());
-	}
-
-	submitCode(code: string, remember = true): boolean {
-		const clean = code.trim().toUpperCase();
-		if (!STICKER_RE.test(clean)) return false;
-		this.stickerCode = clean;
-		this.onboarded = true;
-		if (remember && typeof localStorage !== 'undefined') {
-			localStorage.setItem(STORAGE_KEYS.sticker, clean);
-		}
-		this.start();
-		return true;
-	}
-
-	// An event is "suppressed" when its domain is on the allowlist.
 	isAllowed(domain: string): boolean {
 		return this.allowlist.some((a) => patternMatches(a.pattern, domain));
 	}
@@ -73,7 +39,6 @@ class KnownStore {
 	}
 
 	get visibleEvents(): NetEvent[] {
-		// Newest first, allowlisted events excluded.
 		return [...this.events].filter((e) => !this.isAllowed(e.domain)).sort((a, b) => b.ts - a.ts);
 	}
 
@@ -109,21 +74,14 @@ class KnownStore {
 		return this.events.filter((e) => e.deviceId === id).reduce((sum, e) => sum + e.bytes, 0);
 	}
 
-	/**
-	 * Begin discovery. Instantiates the device client (once) and attempts to
-	 * connect. In production connect() returns false so the app stays searching.
-	 * Under DEV_MOCK the simulated feed runs instead.
-	 */
 	async start() {
-		if (!this.onboarded || !this.stickerCode) return;
-
 		if (shouldUseMock(this.connected)) {
 			this.#startMock();
 			return;
 		}
 
 		if (!this.#client) {
-			this.#client = new KnownClient(this.stickerCode, {
+			this.#client = new KnownClient({
 				onConnectionChange: (c) => (this.connected = c),
 				onEvent: (e) => this.push(e)
 			});
@@ -132,15 +90,57 @@ class KnownStore {
 	}
 
 	async discover(): Promise<boolean> {
-		if (shouldUseMock(this.connected) || !this.#client) return this.connected;
+		if (shouldUseMock(this.connected)) return this.connected;
+		if (!this.#client) {
+			this.#client = new KnownClient({
+				onConnectionChange: (c) => (this.connected = c),
+				onEvent: (e) => this.push(e)
+			});
+		}
+
 		this.connecting = true;
 		try {
 			const ok = await this.#client.connect();
 			this.connected = ok;
+			this.discoveryAttempted = true;
 			if (ok) {
 				this.deviceUrl = this.#client.baseUrl ?? null;
-				this.events = await this.#client.fetchWeeklyAudit();
 				this.devices = await this.#client.fetchDevices();
+				this.events = await this.#client.fetchWeeklyAudit();
+				this.allowlist = await this.#client.fetchAllowlist();
+			}
+			return ok;
+		} finally {
+			this.connecting = false;
+		}
+	}
+
+	async connectManualIp(originOrIp: string): Promise<boolean> {
+		if (shouldUseMock(this.connected)) return this.connected;
+
+		if (!this.#client) {
+			this.#client = new KnownClient({
+				onConnectionChange: (c) => (this.connected = c),
+				onEvent: (e) => this.push(e)
+			});
+		}
+
+		this.connecting = true;
+		try {
+			const base = await connectToManualIp(originOrIp);
+			if (!base) {
+				this.connected = false;
+				this.discoveryAttempted = true;
+				return false;
+			}
+
+			const ok = await this.#client.connect(base);
+			this.connected = ok;
+			this.discoveryAttempted = true;
+			if (ok) {
+				this.deviceUrl = this.#client.baseUrl ?? null;
+				this.devices = await this.#client.fetchDevices();
+				this.events = await this.#client.fetchWeeklyAudit();
 				this.allowlist = await this.#client.fetchAllowlist();
 			}
 			return ok;
@@ -157,19 +157,9 @@ class KnownStore {
 		this.#client?.disconnect();
 		this.deviceUrl = null;
 		this.connected = false;
-		try {
-			localStorage.removeItem(STORAGE_KEYS.LAST_KNOWN_IP as any);
-		} catch {}
 	}
 
 	async connect(): Promise<boolean> {
-		if (!this.onboarded || !this.stickerCode) return false;
-		if (!this.#client) {
-			this.#client = new KnownClient(this.stickerCode, {
-				onConnectionChange: (c) => (this.connected = c),
-				onEvent: (e) => this.push(e)
-			});
-		}
 		return await this.discover();
 	}
 
@@ -217,7 +207,7 @@ class KnownStore {
 		return JSON.stringify(
 			{
 				exported: new Date().toISOString(),
-				device: this.stickerCode ?? 'known-local',
+				device: this.deviceUrl ?? 'known-local',
 				events: this.visibleEvents
 			},
 			null,
@@ -225,7 +215,6 @@ class KnownStore {
 		);
 	}
 
-	// DEV-only simulated feed, tree-shaken when DEV_MOCK is false.
 	async #startMock() {
 		if (this.#timer) return;
 		const [{ makeEvent, seedHistory }, { DEVICES, ALLOWLIST_SEED }] = await Promise.all([
@@ -236,6 +225,7 @@ class KnownStore {
 		this.allowlist = [...ALLOWLIST_SEED];
 		this.events = seedHistory();
 		this.connected = true;
+		this.discoveryAttempted = true;
 		const tick = () => {
 			if (this.connected && !this.paused) this.push(makeEvent());
 			this.#timer = setTimeout(tick, 1400 + Math.random() * 2600);

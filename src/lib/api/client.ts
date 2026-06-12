@@ -1,6 +1,12 @@
 import type { NetEvent, Device, AllowEntry, Stats } from '$lib/types';
 import { discoverPico } from './discovery';
 import { STORAGE_KEYS } from '$lib/config';
+import {
+	adaptDevices,
+	adaptEvents,
+	adaptAllowlist,
+	buildSourceIpToDeviceIdMap
+} from './adapters';
 
 export interface KnownClientEvents {
 	onConnectionChange?: (connected: boolean) => void;
@@ -8,22 +14,21 @@ export interface KnownClientEvents {
 }
 
 export class KnownClient {
-	readonly stickerCode: string;
 	connected = false;
 	#baseUrl: string | null = null;
+	#cachedDevices: Device[] | null = null;
 
 	#handlers: KnownClientEvents;
 
-	constructor(code: string, handlers: KnownClientEvents = {}) {
-		this.stickerCode = code;
+	constructor(handlers: KnownClientEvents = {}) {
 		this.#handlers = handlers;
 	}
 
-	async connect(): Promise<boolean> {
+	async connect(manualBase?: string | null): Promise<boolean> {
 		this.connected = false;
 		this.#handlers.onConnectionChange?.(false);
 
-		const base = await discoverPico();
+		const base = manualBase ?? (await discoverPico());
 		if (!base) return false;
 
 		try {
@@ -36,15 +41,16 @@ export class KnownClient {
 
 		this.#baseUrl = base;
 		try {
-			localStorage.setItem(STORAGE_KEYS.LAST_KNOWN_IP as any, base);
-		} catch {}
+			localStorage.setItem(STORAGE_KEYS.LAST_KNOWN_IP, base);
+		} catch {
+			// ignore storage errors
+		}
 
 		this.connected = true;
 		this.#handlers.onConnectionChange?.(true);
 		return true;
 	}
 
-	/** Expose the connected device base URL when available. */
 	get baseUrl(): string | null {
 		return this.#baseUrl;
 	}
@@ -77,8 +83,9 @@ export class KnownClient {
 				console.error('fetchWeeklyAudit: bad response', res.status);
 				return [];
 			}
-			const data = await res.json();
-			return (data as NetEvent[]) ?? [];
+			const fwData = await res.json();
+			const ipMap = buildSourceIpToDeviceIdMap(this.#cachedDevices ?? []);
+			return adaptEvents(fwData, ipMap);
 		} catch (err) {
 			console.error('fetchWeeklyAudit error', err);
 			return [];
@@ -94,8 +101,10 @@ export class KnownClient {
 				console.error('fetchDevices: bad response', res.status);
 				return [];
 			}
-			const data = await res.json();
-			return (data as Device[]) ?? [];
+			const fwData = await res.json();
+			const adapted = adaptDevices(fwData);
+			this.#cachedDevices = adapted;
+			return adapted;
 		} catch (err) {
 			console.error('fetchDevices error', err);
 			return [];
@@ -111,8 +120,8 @@ export class KnownClient {
 				console.error('fetchAllowlist: bad response', res.status);
 				return [];
 			}
-			const data = await res.json();
-			return (data as AllowEntry[]) ?? [];
+			const fwData = await res.json();
+			return adaptAllowlist(fwData);
 		} catch (err) {
 			console.error('fetchAllowlist error', err);
 			return [];
@@ -136,9 +145,6 @@ export class KnownClient {
 		}
 	}
 
-	/**
-	 * PUT /allowlist — returns the server-assigned id when available.
-	 */
 	async putAllow(entry: AllowEntry): Promise<string | null> {
 		const u = this.url('/allowlist');
 		if (!u) return null;
@@ -155,7 +161,7 @@ export class KnownClient {
 			try {
 				const json = await res.json();
 				return (json && (json.id as string)) ?? null;
-			} catch (e) {
+			} catch {
 				return null;
 			}
 		} catch (err) {

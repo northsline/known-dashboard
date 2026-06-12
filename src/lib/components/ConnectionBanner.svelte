@@ -7,6 +7,7 @@
 	let manualIp = $state('');
 	let manualError = $state('');
 	let manualBusy = $state(false);
+	let showTooltip = $state(false);
 
 	// Load saved IP from localStorage on mount
 	$effect(() => {
@@ -16,6 +17,18 @@
 		} catch {
 			// localStorage not available
 		}
+	});
+
+	// Has this user ever successfully connected?
+	let hasEverConnected = $derived.by(() => {
+		if (known.deviceUrl) return true;
+		if (known.events.length > 0) return true;
+		try {
+			if (localStorage.getItem(STORAGE_KEY)) return true;
+		} catch {
+			// localStorage not available
+		}
+		return false;
 	});
 
 	// Extract a friendly device name from URL or IP
@@ -98,12 +111,44 @@
 		{#if status === 'connected'}
 			<span class="banner-text">
 				{t.connection.connected}
-				<span class="banner-url">({deviceName})</span>
+				<span class="banner-url-wrap">
+					<span
+						class="banner-url"
+						onmouseenter={() => (showTooltip = true)}
+						onmouseleave={() => (showTooltip = false)}
+						onfocus={() => (showTooltip = true)}
+						onblur={() => (showTooltip = false)}
+						tabindex="0"
+						role="button"
+						aria-label={deviceName}
+					>
+						({deviceName})
+					</span>
+					{#if showTooltip}
+						<span class="url-tooltip" role="tooltip">
+							{t.connection.urlTooltip}
+						</span>
+					{/if}
+				</span>
 			</span>
 		{:else if status === 'searching'}
 			<span class="banner-text">{t.connection.searching}</span>
 		{:else}
-			<span class="banner-text">{t.connection.bannerOffline}</span>
+			{#if hasEverConnected}
+				<span class="banner-text">{t.connection.bannerOffline}</span>
+			{:else}
+				<span class="banner-text banner-text-never">
+					{t.connection.bannerOfflineNever}
+					<a
+						class="setup-link"
+						href="https://known.setup"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{t.connection.setupLink}
+					</a>
+				</span>
+			{/if}
 			{#if showManual}
 				<form class="manual-form" onsubmit={submitManual}>
 					<label class="manual-label" for="manual-ip">{t.connection.manualLabel}</label>
@@ -199,9 +244,62 @@
 	.banner-text {
 		min-width: 0;
 	}
+	.banner-text-never {
+		line-height: 1.55;
+	}
+	.banner-url-wrap {
+		position: relative;
+		display: inline;
+	}
 	.banner-url {
 		color: inherit;
 		opacity: 0.75;
+		cursor: help;
+		border-bottom: 1px dashed oklch(0.55 0.14 145 / 0.4);
+	}
+	.url-tooltip {
+		position: absolute;
+		left: 50%;
+		bottom: calc(100% + 6px);
+		transform: translateX(-50%);
+		white-space: nowrap;
+		padding: 5px 10px;
+		background: var(--charcoal);
+		color: var(--paper-soft);
+		font-size: 11.5px;
+		border-radius: var(--r-sm);
+		box-shadow: var(--shadow-pop);
+		pointer-events: none;
+		z-index: 10;
+		animation: tooltipIn 0.15s var(--ease-out);
+	}
+	.url-tooltip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 5px solid transparent;
+		border-top-color: var(--charcoal);
+	}
+	@keyframes tooltipIn {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(3px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+		}
+	}
+	.setup-link {
+		color: oklch(0.55 0.14 145);
+		font-weight: 500;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.setup-link:hover {
+		color: oklch(0.4 0.1 145);
 	}
 	.manual-form {
 		display: flex;

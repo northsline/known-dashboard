@@ -4,12 +4,8 @@
 export const DEV_MOCK = false;
 
 export const STORAGE_KEYS = {
-	sticker: 'known:sticker',
 	LAST_KNOWN_IP: 'known_last_ip'
 } as const;
-
-// Sticker code format: KNOWN-XXXX-XXXX where X is [A-Z0-9].
-export const STICKER_RE = /^KNOWN-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
 /**
  * Helper to decide whether to use the dev mock feed.

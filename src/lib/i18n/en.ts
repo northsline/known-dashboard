@@ -25,7 +25,10 @@ export const en = {
 		manualConnecting: 'Connecting…',
 		manualInvalid: "Couldn't reach a Known device at that address.",
 		manualInvalidFormat: 'Please enter a valid IP address or hostname.',
-		forgetIp: 'Forget saved IP'
+		forgetIp: 'Forget saved IP',
+		bannerOfflineNever: "We can't find your Known yet. Make sure it's plugged in and on the same Wi-Fi as this device. Set it up first at",
+		setupLink: 'known.setup',
+		urlTooltip: 'this is your device, not a website'
 	},
 
 	actions: {
@@ -37,7 +40,10 @@ export const en = {
 		investigate: 'Investigate',
 		openFeed: 'Open weekly audit',
 		addToAllowlist: 'Add to allowlist',
-		remove: 'Remove'
+		remove: 'Remove',
+		needHelp: 'Need help connecting?',
+		openSetup: 'Open',
+		whatIsThis: "What's this?"
 	},
 
 	monitor: {
@@ -121,6 +127,7 @@ export const en = {
 		patternPlaceholder: '*.apple.com',
 		labelPlaceholder: 'why you trust it',
 		hint: 'Use <code>*.domain.com</code> for subdomains, or type an exact host.',
+		hintChip: '*.domain.com',
 		activeRules: 'Active rules',
 		entries: 'entries',
 		hidden: 'hidden',
@@ -139,6 +146,11 @@ export const en = {
 
 	footer: {
 		tagline: 'Runs on your device. Nothing leaves.'
+	},
+
+	explainer: {
+		eyebrow: 'About Known',
+		body: "Known watches your network's DNS traffic. It never blocks anything. It never sends your data anywhere."
 	}
 } as const;
 

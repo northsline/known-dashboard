@@ -10,16 +10,32 @@
 	let { title, eyebrow }: Props = $props();
 
 	let canExport = $derived(known.hasData);
+	let showExplainer = $state(false);
 
 	function exportEvents() {
 		if (!canExport) return;
 		download(`known-export-${Date.now()}.json`, known.exportJSON());
 	}
+
+	function closeExplainer() {
+		showExplainer = false;
+	}
 </script>
 
 <header class="topbar">
 	<div class="topbar-head">
-		<span class="eyebrow">{eyebrow}</span>
+		<div class="topbar-eyebrow-row">
+			<span class="eyebrow">{eyebrow}</span>
+			<button
+				class="what-link"
+				type="button"
+				onclick={() => (showExplainer = true)}
+				aria-haspopup="dialog"
+				aria-controls="explainer-modal"
+			>
+				{t.actions.whatIsThis}
+			</button>
+		</div>
 		<h1 class="topbar-title">{@html title}</h1>
 	</div>
 
@@ -51,6 +67,36 @@
 	</div>
 </header>
 
+{#if showExplainer}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={closeExplainer}>
+		<div
+			id="explainer-modal"
+			class="modal"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="explainer-title"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<div class="modal-head">
+				<span id="explainer-title" class="eyebrow">{t.explainer.eyebrow}</span>
+				<button
+					class="modal-close"
+					type="button"
+					onclick={closeExplainer}
+					aria-label="Close"
+				>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M18 6 6 18" />
+						<path d="m6 6 12 12" />
+					</svg>
+				</button>
+			</div>
+			<p class="modal-body">{t.explainer.body}</p>
+		</div>
+	</div>
+{/if}
+
 <style>
 	.topbar {
 		display: flex;
@@ -64,6 +110,26 @@
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+	}
+	.topbar-eyebrow-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		flex-wrap: wrap;
+	}
+	.what-link {
+		font-size: 11.5px;
+		color: var(--ink-mute);
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		transition: color 0.15s var(--ease);
+	}
+	.what-link:hover {
+		color: var(--ink-soft);
 	}
 	.topbar-title {
 		font-family: 'Instrument Sans', sans-serif;
@@ -84,5 +150,66 @@
 		gap: 10px;
 		align-items: center;
 		flex-wrap: wrap;
+	}
+
+	.modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.25);
+		backdrop-filter: blur(2px);
+		z-index: 100;
+		display: grid;
+		place-items: center;
+		padding: 24px;
+		animation: fadeIn 0.18s var(--ease);
+	}
+	.modal {
+		background: var(--bg-card);
+		border: 1px solid var(--ink-hair);
+		border-radius: var(--r-lg);
+		box-shadow: var(--shadow-pop);
+		max-width: 440px;
+		width: 100%;
+		padding: 22px 24px 24px;
+		animation: rise 0.2s var(--ease-out);
+	}
+	.modal-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 14px;
+	}
+	.modal-close {
+		width: 28px;
+		height: 28px;
+		border-radius: var(--r-sm);
+		display: grid;
+		place-items: center;
+		color: var(--ink-mute);
+		background: none;
+		border: none;
+		cursor: pointer;
+		transition: color 0.15s var(--ease);
+	}
+	.modal-close svg {
+		width: 16px;
+		height: 16px;
+	}
+	.modal-close:hover {
+		color: var(--ink);
+	}
+	.modal-body {
+		font-size: 14.5px;
+		line-height: 1.55;
+		color: var(--ink-soft);
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 </style>

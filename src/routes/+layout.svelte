@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '$lib/styles/app.css';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import CodeGate from '$lib/components/CodeGate.svelte';
 	import ConnectionBanner from '$lib/components/ConnectionBanner.svelte';
 	import { known } from '$lib/stores/known.svelte';
 	import { onMount } from 'svelte';
@@ -9,23 +8,18 @@
 	let { children } = $props();
 
 	onMount(() => {
-		// If a code was restored from storage, begin searching for the device.
-		if (known.onboarded) known.start();
+		known.start();
 		return () => known.stop();
 	});
 </script>
 
-{#if !known.onboarded}
-	<CodeGate />
-{:else}
-	<div class="shell">
-		<Sidebar />
-		<main class="content">
-			<ConnectionBanner />
-			{@render children()}
-		</main>
-	</div>
-{/if}
+<div class="shell">
+	<Sidebar />
+	<main class="content">
+		<ConnectionBanner />
+		{@render children()}
+	</main>
+</div>
 
 <style>
 	.shell {

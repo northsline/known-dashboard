@@ -9,6 +9,7 @@
 	import { formatBytes } from '$lib/utils';
 	import { t } from '$lib/i18n';
 	import type { DetectionKind, Severity } from '$lib/types';
+	import { goto } from '$app/navigation';
 
 	// Time range drives both the chart and the stat window.
 	const ranges = [
@@ -34,6 +35,11 @@
 	);
 	let activeDevices = $derived(new Set(windowEvents.map((e) => e.deviceId)).size);
 	let topAlert = $derived(alerts[0]);
+
+	function investigate() {
+		if (!topAlert) return;
+		query = topAlert.domain;
+	}
 
 	let filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
@@ -178,6 +184,9 @@
 			{#if topAlert}
 				<p class="alert-domain">{topAlert.domain}</p>
 				<p class="alert-note">{topAlert.note}</p>
+				<button class="btn-investigate" onclick={investigate}>
+					{t.actions.investigate}
+				</button>
 			{:else}
 				<p class="alert-note">{known.connected ? t.overview.waitingForTraffic : t.overview.allClear}</p>
 			{/if}
@@ -390,6 +399,23 @@
 	}
 	.alert-panel.idle .alert-note {
 		color: var(--ink-soft);
+	}
+	.btn-investigate {
+		margin-top: 4px;
+		align-self: flex-start;
+		height: 32px;
+		padding: 0 14px;
+		border-radius: var(--r-sm);
+		background: var(--paper);
+		color: var(--charcoal);
+		font-size: 12.5px;
+		font-weight: 500;
+		transition:
+			background 0.18s var(--ease),
+			opacity 0.18s var(--ease);
+	}
+	.btn-investigate:hover {
+		opacity: 0.9;
 	}
 
 	@media (max-width: 1100px) {
