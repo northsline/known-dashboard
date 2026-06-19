@@ -3,7 +3,7 @@
 	import { known } from '$lib/stores/known.svelte';
 	import { t } from '$lib/i18n';
 
-	// Two surfaces: Monitor (weekly audit) and Manage (devices + allowlist).
+	// Two surfaces: Monitor (recent activity) and Manage (devices + allowlist).
 	const links = [
 		{ href: '/', label: 'Monitor', icon: 'feed' },
 		{ href: '/manage', label: 'Manage', icon: 'devices' }

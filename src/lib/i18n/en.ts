@@ -27,7 +27,7 @@ export const en = {
 		manualInvalidFormat: 'Please enter a valid IP address or hostname.',
 		forgetIp: 'Forget saved IP',
 		bannerOfflineNever:
-			"We can't find your Known yet. Make sure it's plugged in and on the same Wi-Fi as this device. If you haven't set it up, go to known.setup first.",
+			"Can't find your Known yet. Check it's plugged in and on the same Wi-Fi as this device. Not set up yet? Go to known.setup first.",
 		setupLink: 'known.setup',
 		urlTooltip: "this is your Known's address, not a website"
 	},
@@ -39,7 +39,7 @@ export const en = {
 		disconnect: 'Disconnect',
 		exportJson: 'Export JSON',
 		investigate: 'Investigate',
-		openFeed: 'Open weekly audit',
+		openFeed: 'Open recent activity',
 		addToAllowlist: 'Add to allowlist',
 		remove: 'Remove',
 		needHelp: 'Need help connecting?',
@@ -86,11 +86,11 @@ export const en = {
 		filterTrusted: 'Trusted',
 		emptyTitle: 'No devices detected yet',
 		emptyBody:
-			"Make sure Known is plugged in and your router is using it for DNS. Then come back here and refresh."
+			"Check Known is plugged in. Check your router is using it for DNS. Then refresh."
 	},
 
 	feed: {
-		eyebrow: 'Weekly audit',
+		eyebrow: 'Recent activity',
 		title: 'Network conversations, <em>over the past week.</em>',
 		search: 'Filter by domain, IP, device…',
 		filterAll: 'All',
@@ -98,10 +98,10 @@ export const en = {
 		filterWatch: 'Watch',
 		filterInfo: 'Info',
 		allDetections: 'All detections',
-		streaming: 'weekly audit',
+		streaming: 'recent activity',
 		matching: 'matching events',
 		emptyTitle: 'No audit yet.',
-		emptyBody: 'Your weekly audit will appear here once your device is connected.'
+		emptyBody: 'Recent activity shows up once your device connects.'
 	},
 
 	timeline: {
@@ -117,12 +117,12 @@ export const en = {
 		notableMoments: 'Notable moments',
 		notableSub: 'flagged exchanges in window',
 		emptyTitle: 'No notable events yet.',
-		emptyBody: 'Flagged exchanges will appear here once your device is connected.'
+		emptyBody: 'Flagged exchanges show up once your device connects.'
 	},
 
 	allowlist: {
-		eyebrow: 'Allowlist',
-		title: "Things you've <em>approved.</em>",
+		eyebrow: 'Reviewed',
+		title: "Things you've <em>reviewed.</em>",
 		lead:
 			"Rules stay on your device. Anything here is hidden from your feed, but still recorded, so you can review it later. Add them as you go.",
 		addRule: 'Add rule',
@@ -136,8 +136,11 @@ export const en = {
 		entries: 'entries',
 		hidden: 'hidden',
 		added: 'added',
-		emptyTitle: 'No rules yet.',
-		emptyBody: 'Add rules as you find traffic you trust. You can add them anytime.'
+		emptyTitle: 'Nothing reviewed yet.',
+		emptyBody: 'Add rules as you find traffic you trust. You can add them anytime.',
+		reviewed: 'reviewed',
+		of: 'of',
+		flagged: 'flagged'
 	},
 
 	detection: {
@@ -155,6 +158,15 @@ export const en = {
 	explainer: {
 		eyebrow: 'About Known',
 		body: "Known keeps an eye on the DNS traffic on your network. It never blocks anything. It never sends your data anywhere."
+	},
+
+	worry: {
+		label: 'Should I worry?',
+		clear: 'No traffic yet',
+		normal: 'All clear',
+		watch: 'Worth a look',
+		alert: 'Needs attention',
+		reduce: 'What you can do'
 	}
 } as const;
 

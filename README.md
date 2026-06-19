@@ -1,8 +1,8 @@
 # Known Dashboard
 
 The local monitoring app for Known, the on-device network privacy monitor by
-Northsline. It connects to the Known device over your local network, pulls the
-weekly audit, and shows every conversation your devices are having, on your own
+Northsline. It connects to the Known device over your local network, pulls
+recent activity, and shows every conversation your devices are having, on your own
 machine.
 
 Known is a **passive monitor**: it logs and analyzes DNS queries and shows you

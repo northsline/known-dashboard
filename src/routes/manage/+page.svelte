@@ -11,6 +11,22 @@
 
 	let hasDevices = $derived(known.devices.length > 0);
 
+	// "Things I've reviewed" — a device counts as reviewed if it's been
+	// marked trusted OR has at least one allowlist rule covering its traffic.
+	// This gives users a sense of progress: "you've looked at 5 of 9 devices."
+	let reviewedCount = $derived.by(() => {
+		return known.devices.filter((d) => {
+			if (known.isTrusted(d.id)) return true;
+			const devEvents = known.eventsForDevice(d.id);
+			return devEvents.some((e) => known.isAllowed(e.domain));
+		}).length;
+	});
+	let flaggedCount = $derived.by(() => {
+		return known.devices.filter((d) =>
+			known.eventsForDevice(d.id).some((e) => e.severity === 'alert')
+		).length;
+	});
+
 	let devices = $derived.by(() => {
 		return known.devices.filter((d) => {
 			const trusted = known.isTrusted(d.id);
@@ -103,7 +119,16 @@
 <section class="block">
 	<div class="block-head">
 		<span class="eyebrow">{t.allowlist.eyebrow}</span>
-		<span class="head-count">{known.allowlist.length} {t.allowlist.entries}</span>
+		{#if hasDevices}
+			<span class="review-progress">
+				{reviewedCount} {t.allowlist.reviewed} {t.allowlist.of} {known.devices.length}
+				{#if flaggedCount > 0}
+					· {flaggedCount} {t.allowlist.flagged}
+				{/if}
+			</span>
+		{:else}
+			<span class="head-count">{known.allowlist.length} {t.allowlist.entries}</span>
+		{/if}
 	</div>
 
 	<div class="layout">
@@ -184,6 +209,12 @@
 		margin-left: auto;
 		font-size: 11.5px;
 		color: var(--ink-mute);
+	}
+	.review-progress {
+		margin-left: auto;
+		font-size: 12px;
+		color: var(--ink-soft);
+		font-variant-numeric: tabular-nums;
 	}
 
 	.seg {

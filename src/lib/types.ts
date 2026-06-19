@@ -69,3 +69,15 @@ export interface DetectionMeta {
 	label: string;
 	blurb: string;
 }
+
+// "Should I worry?" traffic light system.
+// Turns raw event data into a plain-language assessment so users know
+// whether what they see is normal for this device type or worth acting on.
+export type WorryLevel = 'clear' | 'normal' | 'watch' | 'alert';
+
+export interface WorryAssessment {
+	level: WorryLevel;
+	headline: string; // "Your Samsung TV looks normal"
+	detail: string; // "47 connections to ad domains — typical for smart TVs"
+	hint?: string; // optional: "You can reduce this in TV settings > Ad Tracking"
+}

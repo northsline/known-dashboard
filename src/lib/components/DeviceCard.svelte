@@ -2,7 +2,8 @@
 	import type { Device } from '$lib/types';
 	import { known } from '$lib/stores/known.svelte';
 	import { formatBytes } from '$lib/data/generate';
-	import { deviceGlyph, timeAgo } from '$lib/utils';
+	import { deviceGlyph, timeAgo, assessWorry, worryColor } from '$lib/utils';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		device: Device;
@@ -14,6 +15,7 @@
 	let alerts = $derived(events.filter((e) => e.severity === 'alert').length);
 	let trusted = $derived(known.isTrusted(device.id));
 	let lastTs = $derived(events.length ? events[0].ts : device.firstSeen);
+	let worry = $derived(assessWorry(device, events));
 </script>
 
 <div class="card" class:flagged={alerts > 0}>
@@ -40,6 +42,28 @@
 		<div class="cs">
 			<span class="cs-val" class:alert={alerts > 0}>{alerts}</span>
 			<span class="cs-lab mono">alerts</span>
+		</div>
+	</div>
+
+	<div class="worry-bar" data-level={worry.level}>
+		<span class="worry-dot" style="background:{worryColor(worry.level)}"></span>
+		<div class="worry-text">
+			<div class="worry-head">
+				<span class="worry-label">{t.worry.label}</span>
+				<span class="worry-status" style="color:{worryColor(worry.level)}">
+					{worry.level === 'clear' ? t.worry.clear
+					: worry.level === 'normal' ? t.worry.normal
+					: worry.level === 'watch' ? t.worry.watch
+					: t.worry.alert}
+				</span>
+			</div>
+			<p class="worry-detail">{worry.detail}</p>
+			{#if worry.hint}
+				<p class="worry-hint">
+					<span class="worry-hint-label mono">{t.worry.reduce}:</span>
+					{worry.hint}
+				</p>
+			{/if}
 		</div>
 	</div>
 
@@ -164,6 +188,63 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--ink-mute);
+	}
+
+	.worry-bar {
+		display: flex;
+		gap: 12px;
+		padding: 14px 0;
+		border-top: 1px solid var(--ink-hair);
+		border-bottom: 1px solid var(--ink-hair);
+	}
+	.worry-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		margin-top: 5px;
+		transition: background 0.3s var(--ease);
+	}
+	.worry-text {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 0;
+	}
+	.worry-head {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.worry-label {
+		font-family: 'Space Mono', monospace;
+		font-size: 9.5px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-mute);
+	}
+	.worry-status {
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+	.worry-detail {
+		font-size: 12.5px;
+		line-height: 1.45;
+		color: var(--ink-soft);
+	}
+	.worry-hint {
+		font-size: 11.5px;
+		line-height: 1.4;
+		color: var(--ink-mute);
+		margin-top: 2px;
+	}
+	.worry-hint-label {
+		font-size: 9px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+		margin-right: 4px;
 	}
 
 	.card-foot {

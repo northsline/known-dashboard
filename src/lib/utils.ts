@@ -1,4 +1,5 @@
-import type { Severity, DeviceCategory, DetectionKind } from '$lib/types';
+import type { Severity, DeviceCategory, DetectionKind, NetEvent, Device, WorryAssessment, WorryLevel } from '$lib/types';
+import { BASELINES } from '$lib/data/baselines';
 
 export function timeAgo(ts: number, now: number = Date.now()): string {
 	const s = Math.max(0, Math.floor((now - ts) / 1000));
@@ -84,4 +85,59 @@ export function download(filename: string, content: string, mime = 'application/
 	a.download = filename;
 	a.click();
 	URL.revokeObjectURL(url);
+}
+
+// "Should I worry?" — turns a device + its events into a plain-language
+// traffic-light assessment. This is the core of the passive-only positioning:
+// Known doesn't block, but it tells you whether what you see is normal or not.
+export function assessWorry(device: Device, events: NetEvent[]): WorryAssessment {
+	const baseline = BASELINES[device.category];
+	const alertCount = events.filter((e) => e.severity === 'alert').length;
+	const watchCount = events.filter((e) => e.severity === 'watch').length;
+
+	if (events.length === 0) {
+		return {
+			level: 'clear',
+			headline: 'No traffic from this device yet.',
+			detail: 'Known will show you what it talks to as soon as it connects.'
+		};
+	}
+
+	if (alertCount > 0) {
+		const top = events.find((e) => e.severity === 'alert');
+		return {
+			level: 'alert',
+			headline: `${alertCount} alert${alertCount > 1 ? 's' : ''} on this device.`,
+			detail: top?.note ?? 'Traffic going to unexpected endpoints.',
+			hint: baseline.reduceHint
+		};
+	}
+
+	if (watchCount > 0) {
+		return {
+			level: 'watch',
+			headline: `Something unusual on this device.`,
+			detail: `${watchCount} event${watchCount > 1 ? 's' : ''} worth looking into — ${baseline.normal.toLowerCase()}`,
+			hint: baseline.reduceHint
+		};
+	}
+
+	return {
+		level: 'normal',
+		headline: 'Looks normal.',
+		detail: baseline.normal
+	};
+}
+
+export function worryColor(level: WorryLevel): string {
+	switch (level) {
+		case 'alert':
+			return 'var(--alert)';
+		case 'watch':
+			return 'var(--accent)';
+		case 'normal':
+			return 'var(--trust)';
+		default:
+			return 'var(--ink-faint)';
+	}
 }
