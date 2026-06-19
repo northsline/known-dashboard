@@ -99,10 +99,10 @@
 				{t.actions.needHelp}
 				<a
 					class="setup-link"
-					href="https://known.setup"
+					href="[setup-url]"
 					target="_blank"
 					rel="noopener noreferrer"
-				>
+					>
 					{t.actions.openSetup} {t.connection.setupLink}
 				</a>
 			</p>

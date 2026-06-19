@@ -27,8 +27,8 @@ export const en = {
 		manualInvalidFormat: 'Please enter a valid IP address or hostname.',
 		forgetIp: 'Forget saved IP',
 		bannerOfflineNever:
-			"Can't find your Known yet. Check it's plugged in and on the same Wi-Fi as this device. Not set up yet? Go to known.setup first.",
-		setupLink: 'known.setup',
+			"Can't find your Known yet. Check it's plugged in and on the same Wi-Fi as this device. Not set up yet? Go to [setup-url] first.",
+		setupLink: '[setup-url]',
 		urlTooltip: "this is your Known's address, not a website"
 	},
 
@@ -49,17 +49,17 @@ export const en = {
 
 	monitor: {
 		eyebrow: 'Monitor',
-		title: 'Your network, <em>this week.</em>'
+		title: 'Your network, <em>right now.</em>'
 	},
 
 	manage: {
 		eyebrow: 'Manage',
-		title: 'Devices and <em>what you trust.</em>'
+		title: 'Devices and <em>what you review.</em>'
 	},
 
 	overview: {
 		eyebrow: 'Overview',
-		title: 'Network activity, <em>this week.</em>',
+		title: 'Network activity, <em>right now.</em>',
 		statEvents: 'Events / window',
 		statAlerts: 'Open alerts',
 		statDevices: 'Active devices',
@@ -91,7 +91,7 @@ export const en = {
 
 	feed: {
 		eyebrow: 'Recent activity',
-		title: 'Network conversations, <em>over the past week.</em>',
+		title: 'Network conversations, <em>recent.</em>',
 		search: 'Filter by domain, IP, device…',
 		filterAll: 'All',
 		filterAlerts: 'Alerts',
@@ -106,7 +106,7 @@ export const en = {
 
 	timeline: {
 		eyebrow: 'Timeline',
-		title: 'Rewind and review <em>your day.</em>',
+		title: 'Rewind and review <em>recent traffic.</em>',
 		range1h: '1 hour',
 		range6h: '6 hours',
 		range24h: '24 hours',

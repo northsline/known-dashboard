@@ -26,7 +26,7 @@
 	<div class="row-domain">
 		<span class="domain mono">{event.domain}</span>
 		<span class="meta mono">
-			{event.ip} · {event.country} · {event.encrypted ? 'TLS' : 'cleartext'}
+			{event.ip}
 		</span>
 	</div>
 

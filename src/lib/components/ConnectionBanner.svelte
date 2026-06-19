@@ -147,10 +147,10 @@
 					{t.connection.bannerOfflineNever}
 					<a
 						class="setup-link"
-						href="https://known.setup"
+						href="[setup-url]"
 						target="_blank"
 						rel="noopener noreferrer"
-					>
+						>
 						{t.connection.setupLink}
 					</a>
 				</span>
