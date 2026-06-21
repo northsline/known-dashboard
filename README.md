@@ -11,7 +11,7 @@ with traffic: every connection goes through normally. The dashboard shows what
 happened, not "what it blocked."
 
 This repo is the **dashboard only**. Setting up a new device (USB provisioning,
-sticker activation, Wi-Fi) lives in its own hosted app,
+device verification, Wi-Fi) lives in its own hosted app,
 [known-onboard](https://github.com/northsline/known-onboard). The dashboard
 assumes the device is already provisioned and reachable on your network.
 
@@ -40,17 +40,13 @@ npm run preview  # serve the production build locally
 
 ## First run
 
-With no stored device code, the dashboard opens to a small full-screen gate that
-asks for the code on the sticker of your Known: format `KNOWN-XXXX-XXXX`
-(segments are `[A-Z0-9]`). This is **not** device setup — it just tells the
-dashboard which Known to talk to. Provision a new device at
-[known-onboard](https://github.com/northsline/known-onboard) first.
+The dashboard auto-discovers your Known on the local network. It tries
+`known.local` first, then falls back to a saved IP address, then lets you
+enter one manually. No sticker code, no account, no setup — the device just
+needs to be on the same Wi-Fi.
 
-The code is validated on format, persisted to `localStorage` under
-`known:sticker`, and the gate is skipped on subsequent launches. Once a code is
-accepted, the dashboard begins discovery; until a device answers, every surface
-shows its empty / searching state and the connection banner reports that the
-Known is not yet detected.
+Provision a new device at
+[known-onboard](https://github.com/northsline/known-onboard) first.
 
 ## Connection architecture
 
@@ -59,20 +55,12 @@ The UI never holds business logic. State lives in a single runes store
 read derived views from it. The store talks to the device through one seam:
 
 - [`src/lib/api/client.ts`](src/lib/api/client.ts): `KnownClient`, the device
-  connection. It will discover the Known on the local network (mDNS /
-  `known.local`), authenticate with the sticker code, and stream events over
-  HTTP + WebSocket.
-
-**This is currently a scaffold.** Every method resolves to "nothing found"
-(`connect()` returns `false`, `fetchWeeklyAudit()` returns `[]`, etc.) so the app
-exercises its searching and empty states end to end. To make the dashboard live,
-implement the `KnownClient` method bodies; the store and components already
-consume the right shapes (see [`src/lib/types.ts`](src/lib/types.ts)).
+  connection. It discovers the Known on the local network (mDNS /
+  `known.local`) and fetches events over HTTP.
 
 Connection lifecycle on the store:
 
-- `start()`: called on mount once a code is present; instantiates the client and
-  runs discovery.
+- `start()`: called on mount; instantiates the client and runs discovery.
 - `discover()`: retry discovery (wired to the TopBar **Connect** button).
 - `connected` / `connecting` / `paused`: drive the global connection banner and
   the disabled states of the Pause / Connect / Export controls.
@@ -94,18 +82,6 @@ only when this is `true`, so production builds tree-shake them out. Leave it
 not mock data, kept apart so importing it never drags the mock device list into
 the bundle).
 
-## Sticker code format
-
-```
-KNOWN-XXXX-XXXX        X in [A-Z0-9]
-^^^^^ fixed prefix
-      ^^^^ ^^^^ two 4-char segments
-```
-
-Validation is format-only for now (`/^KNOWN-[A-Z0-9]{4}-[A-Z0-9]{4}$/`,
-in `src/lib/config.ts`). Server-side and device-side validation arrive with the
-real `KnownClient`.
-
 ## Internationalization
 
 Lightweight, dependency-free. All UI copy lives in
@@ -120,9 +96,11 @@ create `xx.ts` satisfying `Dict`, register it in `index.ts`, and point
 ```
 src/
   lib/
-    api/client.ts        KnownClient - device connection scaffold
-    components/          Sidebar, TopBar, CodeGate, EmptyState, cards, charts
-    config.ts            DEV_MOCK flag, storage keys, sticker regex
+    api/client.ts        KnownClient - device connection
+    api/discovery.ts     mDNS → localStorage → manual IP
+    api/adapters.ts      Firmware MVP → dashboard types
+    components/          Sidebar, TopBar, EmptyState, cards, charts
+    config.ts            DEV_MOCK flag, storage keys
     data/detections.ts   static DETECTIONS metadata (production, not mock)
     data/{generate,static}.ts   DEV-only mock generator + seed data
     i18n/                en.ts (Dict) + index.ts (active `t`)
@@ -131,7 +109,7 @@ src/
     types.ts             domain model (NetEvent, Device, AllowEntry...)
     utils.ts             formatting helpers
   routes/
-    +layout.svelte       code gate on first run; mounts shell + banner
+    +layout.svelte       mounts shell + banner (no gate)
     +page.svelte         Monitor: stats, traffic chart (1h/6h/24h), live feed, alerts
     manage/+page.svelte  Manage: device grid + allowlist rules
 ```
@@ -147,6 +125,6 @@ device and is easy to keep in sync:
 
 ## Out of scope (tracked elsewhere)
 
-Real Pico API implementation, device-side sticker validation, desktop packaging,
+Real Pico API implementation, device-side identity verification, desktop packaging,
 and actual mDNS network discovery. Device provisioning lives in
 [known-onboard](https://github.com/northsline/known-onboard).
