@@ -123,8 +123,18 @@ device and is easy to keep in sync:
 - **Manage** (`/manage`) — the device grid (All / Flagged / Watched / Trusted)
   and the allowlist (add rules + active rules).
 
+## CLI companion
+
+A terminal tool (`known`) lives in `known/backend/known-cli/`. It talks to the
+same HTTP API and adds things the dashboard can't do: follow a single device in
+real time, diff state between runs, silent monitoring for cron jobs, and JSON
+output for piping to other tools. Install with `pip install ./known-cli`.
+
+The dashboard is for the rich interactive experience. The CLI is for speed,
+scripting, and composability.
+
 ## Out of scope (tracked elsewhere)
 
-Real Pico API implementation, device-side identity verification, desktop packaging,
-and actual mDNS network discovery. Device provisioning lives in
-[known-onboard](https://github.com/northsline/known-onboard).
+Device-side identity verification, desktop packaging. Device provisioning
+lives in [known-onboard](https://github.com/northsline/known-onboard).
+Terminal monitoring lives in `known/backend/known-cli/`.
